@@ -7,8 +7,7 @@ from pydantic import BaseModel, Field
 from typing import Dict, Optional
 import threading
 import csv
-
-app = FastAPI(title="Offline Neural Machine Translation API", description="FastAPI backend for offline translation and LLM.")
+from contextlib import asynccontextmanager
 
 MODEL_DIR = os.environ.get("TRANSLATOR_MODEL_DIR", os.path.join(os.path.dirname(__file__), "models"))
 OPUS_MODEL_NAME = "Helsinki-NLP/opus-mt-en-fr"
@@ -59,10 +58,15 @@ def save_glossary(glossary):
         for entry in glossary:
             writer.writerow([entry["source"], entry["translation"]])
 
-@app.on_event("startup")
-def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the models
     threading.Thread(target=download_and_load_opus, daemon=True).start()
     threading.Thread(target=download_and_load_croissant, daemon=True).start()
+    yield
+
+
+app = FastAPI(lifespan=lifespan, title="Offline Neural Machine Translation API", description="FastAPI backend for offline translation and LLM.")
 
 @app.get("/health", tags=["System"])
 def health_check():
