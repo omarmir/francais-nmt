@@ -83,7 +83,7 @@ def system_resources():
         "cpu_percent": cpu
     }
 
-@app.post("/translate/fr-en", tags=["Translation"])
+@app.post("/translate/en-fr", tags=["Translation"])
 def translate_fr_en(payload: TranslationRequest):
     text = payload.text
     if not text:
@@ -92,6 +92,7 @@ def translate_fr_en(payload: TranslationRequest):
         with model_lock:
             if opus_model is None or opus_tokenizer is None:
                 download_and_load_opus()
+                raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Model is still loading. Please try again later.")
         input_ids = opus_tokenizer.encode(text, return_tensors="pt")
         output_ids = opus_model.generate(input_ids, max_length=256)
         translation = opus_tokenizer.decode(output_ids[0], skip_special_tokens=True)
@@ -109,6 +110,7 @@ def croissant_generate(payload: CroissantRequest):
         with model_lock:
             if croissant_model is None or croissant_tokenizer is None:
                 download_and_load_croissant()
+                raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Model is still loading. Please try again later.")
         input_ids = croissant_tokenizer.encode(prompt, return_tensors="pt")
         output_ids = croissant_model.generate(input_ids, max_length=256)
         response = croissant_tokenizer.decode(output_ids[0], skip_special_tokens=True)
@@ -181,6 +183,7 @@ def croissant_review(payload: CroissantRequest, use_glossary: Optional[bool] = F
         with model_lock:
             if croissant_model is None or croissant_tokenizer is None:
                 download_and_load_croissant()
+                raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Model is still loading. Please try again later.")
         input_ids = croissant_tokenizer.encode(full_prompt, return_tensors="pt")
         output_ids = croissant_model.generate(input_ids, max_length=256)
         response = croissant_tokenizer.decode(output_ids[0], skip_special_tokens=True)
