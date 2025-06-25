@@ -38,3 +38,28 @@ python3 -m venv venv
 .\venv\Scripts\Activate.ps1
 # On macOS/Linux
 source venv/bin/activate
+```
+### 2. Install Dependencies
+Once your virtual environment is active, install the required Python packages:
+`pip install -r requirements.txt`
+
+### 3. Running the Application
+The application can be run using uvicorn. Models will be downloaded and loaded on startup. This might take some time depending on your internet connection.
+`uvicorn main:app --host 0.0.0.0 --port 8000 --reload`
+
+### 4. API Documentation
+The API documentation (Swagger UI) will be available at http://127.0.0.1:8000/docs.
+
+### 5. Glossary Format
+The glossary CSV file should contain two columns: `source_term,translation`.
+
+Example `glossary.csv`:
+source_term,translation
+apple,pomme
+banana,banane
+orange,orange
+
+## Environment Variables
+TRANSLATOR_MODEL_DIR: Specifies the directory where models will be downloaded and stored. Defaults to ./models. You can override this using the TRANSLATOR_MODEL_DIR environment variable.
+
+The glossary is stored in MODEL_DIR/glossary.csv. The maximum number of terms allowed in the glossary is GLOSSARY_MAX_TERMS (currently 500).
